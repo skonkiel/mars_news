@@ -21,32 +21,48 @@
     <div class="row">
       <!-- Mars news -->
       <div class="col-md-12">
-          <h3 class="heading">Latest Mars News</h3>
-            <h4 class="heading">{{mars.news_title}}</h4>
+          <h2 class="heading">Latest Mars News</h2>
+            <h3 class="heading">{{mars.news_title}}</h3>
             <p>{{mars.news_para}}</p>
       </div>
     </div>
     <!-- Featured image -->
     <div class="row">
       <div class="col-md-8">
-          <h3 class="heading">Featured Mars Image</h3>
+          <h2 class="heading">Featured Mars Image</h2>
+          <img src='{{mars.featured_image_url}}' alt="Featured Mars image" style="width: 100%;">
         </div>
       <!-- Mars current weather -->
       <div class="col-md-4">
-          <h3 class="heading">Current Weather on Mars</h3>
+          <h2 class="heading">Current Weather on Mars</h2>
+          <p>{{mars.mars_weather}}</p>
+          
       </div> 
       <div class="col-md-8">
       </div>
       <!-- Mars facts table -->
       <div class="col-md-4">
-          <h3 class="heading">Mars Facts</h3>
+          <h2 class="heading">Mars Facts</h2>
+          {{mars.html_table}}
+          <!-- html_table -->
       </div>
     </div>
     <!-- Hemisphere photos (cards) -->
     <div class="row">
         <div class="col-md-12">
-          <h3 class="heading">Mars Hemispheres</h3>
+          <h2 class="heading">Mars Hemispheres</h2>
+          <hr>
+        </div>
+          {% for h in mars.hemisphere_urls %}
+          <div class="md-col-6">
+          <div class="card text-center" style="width: 18rem;">
+            <img src="{{h.img_url}}" class="card-img-top mt-5" alt="{{h.title}}">
+            <div class="card-body">
+              <h3 class="card-title">{{h.title}}</h3>
+            </div>
           </div>
+          </div>
+          {% endfor %}
     </div>
 
     <div class="row">
