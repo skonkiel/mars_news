@@ -35,7 +35,6 @@ def scrape():
     mars_data['news_title'] = news_items.find('h3').text
     mars_data['news_para'] = news_items.find('div', class_='article_teaser_body').text
 
-    
     # ## JPL Mars Space Images - Featured Image
     url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
     browser.visit(url)
