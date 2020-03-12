@@ -31,8 +31,11 @@ def scrape():
     html = browser.html
     soup = BeautifulSoup(html, 'html.parser')
 
+    # Give the page time to load, otherwise it will throw an error
+    time.sleep(1)
+
     news_items = soup.find('ul', class_='item_list')
-    mars_data['news_title'] = news_items.find('h3').text
+    mars_data['news_title'] = news_items.find('div', class_='content_title').text
     mars_data['news_para'] = news_items.find('div', class_='article_teaser_body').text
 
     # ## JPL Mars Space Images - Featured Image
