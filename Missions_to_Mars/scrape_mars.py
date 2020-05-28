@@ -28,28 +28,36 @@ def scrape():
     browser.visit(url)
 
     # Retrieve page & parse with BeautifulSoup
-    html = browser.html
-    soup = BeautifulSoup(html, 'html.parser')
+    
+    try:
+        html = browser.html
+        soup = BeautifulSoup(html, 'html.parser')
 
-    # Give the page time to load, otherwise it will throw an error
-    time.sleep(1)
-
-    news_items = soup.find('ul', class_='item_list')
-    mars_data['news_title'] = news_items.find('div', class_='content_title').text
-    mars_data['news_para'] = news_items.find('div', class_='article_teaser_body').text
+        # Give the page time to load, otherwise it will throw an error
+        time.sleep(1)
+        mars_data['news_title'] = soup.find_all('div', class_='content_title')[1].text
+        mars_data['news_para'] = soup.find_all('div', class_='article_teaser_body')[0].text
+    except:
+        mars_data['news_title'] = "No news found"
+        mars_data['news_para'] = "Hopefully, no news is good news!"
 
     # ## JPL Mars Space Images - Featured Image
-    url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
-    browser.visit(url)
-
-    html = browser.html
-    soup = BeautifulSoup(html, 'html.parser')
-
+    
     # Use splinter to navigate the site and find the image url for the current Featured Mars Image and 
     # assign the url string to a variable called featured_image_url.
-    s = soup.find('article', class_='carousel_item')['style']
-    url = s.split("'")[1]
-    mars_data['featured_image_url'] = 'https://www.jpl.nasa.gov' + url
+    
+    try:
+        url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
+        browser.visit(url)
+
+        html = browser.html
+        soup = BeautifulSoup(html, 'html.parser')
+
+        s = soup.find('article', class_='carousel_item')['style']
+        url = s.split("'")[1]
+        mars_data['featured_image_url'] = 'https://www.jpl.nasa.gov' + url
+    except:
+        pass
     
     
     # ## Mars Weather (Twitter)
@@ -61,53 +69,63 @@ def scrape():
 
     url = 'https://twitter.com/marswxreport?lang=en'
 
-    html_text = requests.get(url).text
-    soup = BeautifulSoup(html_text, 'html.parser')
+    try:
+        html_text = requests.get(url).text
+        soup = BeautifulSoup(html_text, 'html.parser')
 
-    mars_weather = soup.find_all('p', class_='tweet-text')[0].text
-    mars_weather = mars_weather.split('pic.twitter.com')
-    mars_data['mars_weather'] = mars_weather[0]
+        mars_weather = soup.find_all('p', class_='tweet-text')[0].text
+        mars_weather = mars_weather.split('pic.twitter.com')
+        mars_data['mars_weather'] = mars_weather[0]
+    except:
+        mars_data['mars_weather'] = f"Weather data not found. Try visiting {url} for more information."
     
     
     # ## Mars Facts
 
     # Visit the Mars Facts webpage here and use Pandas to scrape the table containing facts about the planet 
-    r = requests.get("https://space-facts.com/mars/")
-    soup = BeautifulSoup(r.content,'lxml')
-    table = soup.find('table', id='tablepress-p-mars-no-2')
-    df = pd.read_html(str(table))
-    df = df[0]
+    
+    try:
+        r = requests.get("https://space-facts.com/mars/")
+        soup = BeautifulSoup(r.content,'lxml')
+        table = soup.find('table', id='tablepress-p-mars-no-2')
+        df = pd.read_html(str(table))
+        df = df[0]
 
-    df.columns = ['description', 'value']
-    df.set_index(keys=['description'], inplace=True)
+        df.columns = ['description', 'value']
+        df.set_index(keys=['description'], inplace=True)
 
-    # Use Pandas to convert the data to a HTML table string.
-    html = df.to_html()
-    mars_data['html_table'] = html.replace('\n', '')
+        # Use Pandas to convert the data to a HTML table string.
+        html = df.to_html()
+        mars_data['html_table'] = html.replace('\n', '')
+    except:
+        pass
     
     # ## Mars Hemispheres
 
-    r = requests.get("https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars")
-    soup = BeautifulSoup(r.content,'lxml')
-
-    links = soup.find_all('a', class_='itemLink')
-
-    hemisphere_image_urls = []
-
-    for link in links:
-        hemisphere = {}
-        r = requests.get("https://astrogeology.usgs.gov/" + link['href'])
+    try:
+        r = requests.get("https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars")
         soup = BeautifulSoup(r.content,'lxml')
-        l = soup.find('li')
-        link = l.contents[0]
-        img_url = link['href']
-        title = soup.title.text
-        title = title.split("|")[0]
-        hemisphere["title"] = title
-        hemisphere["img_url"] = img_url
-        hemisphere_image_urls.append(hemisphere)
-        time.sleep(1)
-              
-    mars_data['hemisphere_urls'] = hemisphere_image_urls
+
+        links = soup.find_all('a', class_='itemLink')
+
+        hemisphere_image_urls = []
+
+        for link in links:
+            hemisphere = {}
+            r = requests.get("https://astrogeology.usgs.gov/" + link['href'])
+            soup = BeautifulSoup(r.content,'lxml')
+            l = soup.find('li')
+            link = l.contents[0]
+            img_url = link['href']
+            title = soup.title.text
+            title = title.split("|")[0]
+            hemisphere["title"] = title
+            hemisphere["img_url"] = img_url
+            hemisphere_image_urls.append(hemisphere)
+            time.sleep(1)
+
+        mars_data['hemisphere_urls'] = hemisphere_image_urls
+    except:
+        pass
 
     return mars_data           
